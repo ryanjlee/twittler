@@ -3,25 +3,67 @@
   <head>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <link type="text/css" rel="stylesheet" href="index.css"/>
   </head>
   <body>
+    <div id="header">
+      <p>Twittler</p>
+    </div>
+    <div id="main">
+      <h2>Tweets</h2>
+      <a href='#' id="refresh">View new Tweets</a>
+    </div>
     <script>
 
       $(document).ready(function(){
-        var $body = $('body');
-        $body.html('');
+        var $main = $('#main');
+        //$body.html('');
 
         var index = streams.home.length - 1;
         while(index >= 0){
           var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
+          /*var $tweet = $('<div></div>');
+          $tweet.text(index + '@' + tweet.user + ' - ' + tweet.created_at.toLocaleTimeString() + ': ' + tweet.message);*/
+          $tweet = '<div>' + '@' + '<a href="#" class="show">' + tweet.user + '</a>' + ' - ' + tweet.created_at.toLocaleTimeString() + ': ' + tweet.message + '</div>';
+          $main.append($tweet);
           index -= 1;
         }
 
+        var messageCount = streams.home.length - 1;
+        function update() {
+          while (streams.home.length - 1 > messageCount) {
+            messageCount += 1;
+            var newTweet = streams.home[messageCount];
+            $tweet = '<div>' + '@' + '<a href="#" class="show">' + newTweet.user + '</a>' + ' - ' + newTweet.created_at.toLocaleTimeString() + ': ' + newTweet.message + '</div>';
+            $('#main div').first().before($tweet);
+          }
+        }
+
+        $('#refresh').on('click', function(event) {
+          event.preventDefault();
+          update();
+        });
+
+        function viewTimeline(link) {
+          $('.timeline').remove();
+          $timeline = '<div class="timeline"></div>';
+          link.closest('div').append($timeline);
+          var user = link.context.innerText;
+          var userTimeline = streams.users[user];
+          for (var i = userTimeline.length - 1; i >= 0; i--) {
+            var pastTweet = userTimeline[i];
+            $tweet = '<div>' + '@' + pastTweet.user + ' - ' + pastTweet.created_at.toLocaleTimeString() + ': ' + pastTweet.message + '</div>';
+            $('.timeline').append($tweet);
+          };
+        }
+
+        $('#main').on('click', '.show', function(event) {
+          event.preventDefault();
+          viewTimeline($(this));
+        });
       });
 
     </script>
+
   </body>
 </html>
